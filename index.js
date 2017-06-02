@@ -15,9 +15,12 @@ var fs = require('fs');
 var GitHubApi = require('github');
 var mime = require('mime');
 
-var secretfile = "./githubtoken.secret" 
 // This should be a file containing the github Personal Access Token, encrypted using AWS-KMS and base 64 decoded.
 // See the README for more detail.
+var secretfile = "./githubtoken.secret" 
+
+// which region is used to store the KMS key to decrypt the file above.
+var kmsregion = "eu-central-1";
 
 var github = new GitHubApi({
     version: '3.0.0',
@@ -28,7 +31,7 @@ var github = new GitHubApi({
 
 // get reference to S3 client 
 var s3client = new AWS.S3();
-var s3bucket = "internal.nytlabs.com";
+var s3bucket = "cloud-maps";
  
 // This handler is called by the AWS Lambda controller when a new SNS message arrives.
 exports.handler = function(event, context) {
@@ -54,7 +57,7 @@ exports.handler = function(event, context) {
         var token = null;
 
         // get key management client for decrypting secrets
-        var kms = new AWS.KMS({region:'us-east-1'});
+        var kms = new AWS.KMS({region: kmsregion});
         var params = {
             CiphertextBlob: encryptedSecret
         };
